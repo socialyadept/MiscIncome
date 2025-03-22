@@ -1,0 +1,20 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-code-quality:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Setup MSBuild for .NET Framework
+        uses: microsoft/setup-msbuild@v1.3.1
+        
+      - name: Run Code Formatting Check
+        run: dotnet format --verify-no-changes
+

@@ -92,19 +92,15 @@ namespace QB_MiscIncome_Test
                     Assert.NotNull(matchingDep);
 
                     // Check numeric CompanyID in Memo
-                    // e.g. if your deposit has a property "Memo" that's just the numeric string
-                    // If so, we might do: 
                     Assert.Equal(d.CompanyID.ToString(), matchingDep.Memo);
 
                     // Check deposit date
                     Assert.Equal(d.DepositDate.Date, matchingDep.DepositDate.Date);
 
                     // Check each line
-                    // e.g. if your deposit model has a list of lines with (ReceivedFrom, FromAccount, Amount)
                     Assert.Equal(2, matchingDep.Lines.Count);
 
-                    // The order of lines might vary, so you might do more flexible checks. 
-                    // We'll assume they appear in the same order we created them:
+                    // We'll assume the same order:
                     Assert.Equal(d.LineAccounts[0], matchingDep.Lines[0].FromAccountName);
                     Assert.Equal(d.LineAccounts[1], matchingDep.Lines[1].FromAccountName);
 
@@ -155,32 +151,27 @@ namespace QB_MiscIncome_Test
             // The top-level deposit add
             var depositAdd = request.AppendDepositAddRq();
 
-            // The deposit goes "TO" some account (like Checking)
-            // Adjust to match your QuickBooks "Deposit to" account
+            // The deposit goes TO some account (like Checking)
             depositAdd.DepositToAccountRef.FullName.SetValue("Checking");
 
             // The numeric CompanyID in Memo
             depositAdd.Memo.SetValue(companyID.ToString());
             depositAdd.TxnDate.SetValue(depositDate);
 
-            // 1) First line
-            //    ReceivedFrom = this customer
-            //    FromAccountRef = "Sales"
-            //    Amount = line1Amount
-            //    If you also want to store the name in the line's memo, you can do that.
+            // ----- 1st Line: "Sales" -----
             var line1 = depositAdd.DepositLineAddList.Append();
-            line1.ReceivedFromRef.ListID.SetValue(customerListID);
-            line1.AccountRef.FullName.SetValue("Sales");
-            line1.Amount.SetValue(line1Amount);
+            // We want a deposit line with "DepositInfo" (not PaymentLine).
+            line1.ORDepositLineAdd.DepositInfo.EntityRef.ListID.SetValue(customerListID);
+            line1.ORDepositLineAdd.DepositInfo.AccountRef.FullName.SetValue("Sales");
+            line1.ORDepositLineAdd.DepositInfo.Amount.SetValue(line1Amount);
+            // Optionally line1.ORDepositLineAdd.DepositInfo.Memo.SetValue(...);
 
-            // 2) Second line
-            //    ReceivedFrom = same customer
-            //    FromAccountRef = "Shipping and Delivery Income"
-            //    Amount = line2Amount
+            // ----- 2nd Line: "Shipping and Delivery Income" -----
             var line2 = depositAdd.DepositLineAddList.Append();
-            line2.ReceivedFromRef.ListID.SetValue(customerListID);
-            line2.AccountRef.FullName.SetValue("Shipping and Delivery Income");
-            line2.Amount.SetValue(line2Amount);
+            line2.ORDepositLineAdd.DepositInfo.EntityRef.ListID.SetValue(customerListID);
+            line2.ORDepositLineAdd.DepositInfo.AccountRef.FullName.SetValue("Shipping and Delivery Income");
+            line2.ORDepositLineAdd.DepositInfo.Amount.SetValue(line2Amount);
+            // Optionally line2.ORDepositLineAdd.DepositInfo.Memo.SetValue(...);
 
             // Send to QB
             var resp = qbSession.SendRequest(request);

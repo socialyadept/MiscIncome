@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Serilog;
 using QBFC16Lib;
 using static QB_MiscIncome_Test.CommonMethods; // Reuse or adapt your shared helpers
+using QB_MiscIncome_Lib;
 
 namespace QB_MiscIncome_Test
 {
@@ -122,6 +123,10 @@ namespace QB_MiscIncome_Test
                         DeleteDeposit(qbSession, depID);
                     }
                 }
+
+                // Add a delay to allow QuickBooks to fully process the deposit deletions
+                Log.Information("Waiting for QuickBooks to process deposit deletions before deleting customers...");
+                Thread.Sleep(3000);  // 3 second delay
 
                 using (var qbSession = new QuickBooksSession(AppConfig.QB_APP_NAME))
                 {

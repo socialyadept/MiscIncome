@@ -9,7 +9,7 @@ namespace QB_MiscIncome_Lib
     /// <summary>
     /// Class for querying and retrieving deposit transactions from QuickBooks
     /// </summary>
-    public static class MiscIncomeReader
+    public class MiscIncomeReader
     {
         /// <summary>
         /// Queries all deposit transactions from QuickBooks

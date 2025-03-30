@@ -124,10 +124,6 @@ namespace QB_MiscIncome_Test
                     }
                 }
 
-                // Add a delay to allow QuickBooks to fully process the deposit deletions
-                Log.Information("Waiting for QuickBooks to process deposit deletions before deleting customers...");
-                Thread.Sleep(3000);  // 3 second delay
-
                 using (var qbSession = new QuickBooksSession(AppConfig.QB_APP_NAME))
                 {
                     foreach (var custID in createdCustomerListIDs)

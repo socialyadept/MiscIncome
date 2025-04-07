@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using QB_MiscIncome_Lib;
 
-namespace QB_MiscIncome_Lib
+namespace QB_MiscIncome_CLI
 {
     /// <summary>
     /// Handles parsing of CSV deposit data file into MiscIncome objects

@@ -1,4 +1,6 @@
 ﻿using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.File;
 
 namespace QB_MiscIncome_CLI
 {

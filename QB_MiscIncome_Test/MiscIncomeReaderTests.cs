@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Serilog;
 using QBFC16Lib;
 using static QB_MiscIncome_Test.CommonMethods; // Reuse or adapt your shared helpers
+using QB_MiscIncome_Lib;
 
 namespace QB_MiscIncome_Test
 {

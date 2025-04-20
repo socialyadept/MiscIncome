@@ -30,7 +30,7 @@ namespace QB_MiscIncome_Test
                 // 1) Create any needed customers in QB
                 using (var qbSession = new QuickBooksSession(AppConfig.QB_APP_NAME))
                 {
-                    qbSession.BeginSession(); // only if your QuickBooksSession requires it
+                    //qbSession.BeginSession(); // only if your QuickBooksSession requires it
                     for (int i = 0; i < 2; i++)
                     {
                         string custName = $"TestCust_{Guid.NewGuid().ToString("N").Substring(0,6)}";

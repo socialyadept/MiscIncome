@@ -135,7 +135,7 @@ namespace QB_MiscIncome_Lib
                 TotalAmount = depositRet.DepositTotal?.GetValue() ?? 0.0
             };
 
-            // Get memo field (which stores CompanyID)
+            // Get memo field (which stores Child ID)
             if (depositRet.Memo != null)
             {
                 deposit.Memo = depositRet.Memo.GetValue();
@@ -194,6 +194,114 @@ namespace QB_MiscIncome_Lib
             }
 
             return deposit;
+        }
+
+        /// <summary>
+        /// Queries MiscIncome records from QuickBooks and displays them in a formatted table
+        /// </summary>
+        public static void QueryMiscIncomes()
+        {
+            try
+            {
+                // Simply call the existing PrintAllMiscIncomes method
+                PrintAllMiscIncomes();
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error querying and displaying MiscIncome records");
+                Console.WriteLine($"Error querying MiscIncome records: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Prints all MiscIncome records to the console in a formatted table
+        /// </summary>
+        /// <summary>
+        /// Prints all MiscIncome records to the console in a formatted table
+        /// </summary>
+        /// <summary>
+        /// Prints all MiscIncome records to the console in a formatted table
+        /// </summary>
+        /// <summary>
+        /// Prints all MiscIncome records to the console in a formatted table
+        /// </summary>
+        public static void PrintAllMiscIncomes()
+        {
+            try
+            {
+                List<MiscIncome> incomes = QueryAllMiscIncomes();
+
+                if (incomes.Count == 0)
+                {
+                    Console.WriteLine("No MiscIncome records found in QuickBooks.");
+                    return;
+                }
+
+                // Calculate total of all deposits
+                double grandTotal = 0;
+                int totalLines = 0;
+
+                // Print a single unified header with increased spacing
+                Console.WriteLine("\n============================= MISC INCOME LIST =============================");
+                Console.WriteLine(String.Format("{0,-12}  {1,-12}  {2,-15}  {3,-17}  {4,-17}  {5,-12}",
+                    "Date", "Memo", "Deposit Account", "Account", "Received From", "Amount"));
+                Console.WriteLine("--------------------------------------------------------------------------");
+
+                // Print each MiscIncome with its detail lines in a flattened format
+                foreach (var income in incomes)
+                {
+                    grandTotal += income.TotalAmount;
+                    totalLines += income.Lines.Count;
+
+                    // Print deposit info with its detail lines directly
+                    if (income.Lines.Count > 0)
+                    {
+                        foreach (var line in income.Lines)
+                        {
+                            Console.WriteLine(String.Format("{0,-12:d}  {1,-12}  {2,-15}  {3,-17}  {4,-17}  {5,-12:C}",
+                                income.DepositDate,
+                                TruncateString(income.Memo, 12),
+                                TruncateString(income.DepositToAccount, 15),
+                                TruncateString(line.FromAccountName, 17),
+                                TruncateString(line.ReceivedFromName, 17),
+                                line.Amount));
+                        }
+                    }
+                    else
+                    {
+                        // If no lines, still print the deposit
+                        Console.WriteLine(String.Format("{0,-12:d}  {1,-12}  {2,-15}  {3,-17}  {4,-17}  {5,-12:C}",
+                            income.DepositDate,
+                            TruncateString(income.Memo, 12),
+                            TruncateString(income.DepositToAccount, 15),
+                            "", "", 0.0));
+                    }
+                }
+
+                // Print footer with totals
+                Console.WriteLine("--------------------------------------------------------------------------");
+                Console.WriteLine($"SUMMARY: {incomes.Count} deposits, {totalLines} lines     Total: {grandTotal:C}");
+                Console.WriteLine("==========================================================================");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error printing MiscIncome records");
+                Console.WriteLine($"Error printing MiscIncome records: {ex.Message}");
+                throw;
+            }
+        }
+
+
+        /// <summary>
+        /// Helper function to truncate strings for display formatting
+        /// </summary>
+        private static string TruncateString(string input, int maxLength)
+        {
+            if (string.IsNullOrEmpty(input))
+                return string.Empty;
+
+            return input.Length <= maxLength ? input : input.Substring(0, maxLength - 3) + "...";
         }
     }
 }

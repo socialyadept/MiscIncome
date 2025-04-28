@@ -38,34 +38,81 @@ namespace QB_MiscIncome_CLI
 
             try
             {
-                // 1. Query the QuickBooks deposits
-                Console.WriteLine("\n1. Querying initial QuickBooks MiscIncome records...");
-                QueryMiscIncomes();
-
-                // 2. Add a single test record
-                Console.WriteLine("\n2. Adding a single test MiscIncome record...");
-                MiscIncome testRecord = CreateTestRecord();
-                AddSingleMiscIncome(testRecord);
-
-                // 3. Query again to show the added record
-                Console.WriteLine("\n3. Querying QuickBooks MiscIncome records after adding one record...");
-                QueryMiscIncomes();
-
-                // 4. Add all records from Excel file
-                Console.WriteLine("\n4. Adding all MiscIncome records from Excel file...");
-                if (File.Exists(excelFilePath))
+                // Present a menu of options to the user
+                while (true)
                 {
-                    AddAllMiscIncomesFromExcel();
-                }
-                else
-                {
-                    throw new Exception($"Excel File not found at: {excelFilePath}");
-                }
+                    Console.Clear();
+                    Console.WriteLine("QuickBooks Desktop MiscIncome Integration");
+                    Console.WriteLine("=======================================");
+                    Console.WriteLine("1. Query QuickBooks MiscIncome records");
+                    Console.WriteLine("2. Add a single test MiscIncome record");
+                    Console.WriteLine("3. Compare Excel records with QuickBooks");
+                    Console.WriteLine("4. Add all MiscIncome records from Excel file");
+                    Console.WriteLine("5. Exit");
+                    Console.WriteLine();
+                    Console.Write("Enter your choice (1-5): ");
 
-                // 5. Query all the results
-                Console.WriteLine("\n5. Querying all QuickBooks MiscIncome records after adding Excel records...");
-                QueryMiscIncomes();
+                    string choice = Console.ReadLine();
 
+                    switch (choice)
+                    {
+                        case "1":
+                            Console.Clear();
+                            Console.WriteLine("Querying QuickBooks MiscIncome records...");
+                            QueryMiscIncomes();
+                            Console.WriteLine("\nPress any key to return to the menu...");
+                            Console.ReadKey();
+                            break;
+
+                        case "2":
+                            Console.Clear();
+                            Console.WriteLine("Adding a single test MiscIncome record...");
+                            MiscIncome testRecord = CreateTestRecord();
+                            AddSingleMiscIncome(testRecord);
+                            Console.WriteLine("\nPress any key to return to the menu...");
+                            Console.ReadKey();
+                            break;
+
+                        case "3":
+                            Console.Clear();
+                            Console.WriteLine("Comparing Excel records with QuickBooks records...");
+                            if (File.Exists(excelFilePath))
+                            {
+                                CompareMiscIncomesFromExcel();
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Error: Excel File not found at: {excelFilePath}");
+                            }
+                            Console.WriteLine("\nPress any key to return to the menu...");
+                            Console.ReadKey();
+                            break;
+
+                        case "4":
+                            Console.Clear();
+                            Console.WriteLine("Adding all MiscIncome records from Excel file...");
+                            if (File.Exists(excelFilePath))
+                            {
+                                AddAllMiscIncomesFromExcel();
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Error: Excel File not found at: {excelFilePath}");
+                            }
+                            Console.WriteLine("\nPress any key to return to the menu...");
+                            Console.ReadKey();
+                            break;
+
+                        case "5":
+                            Console.WriteLine("Exiting application...");
+                            return;
+
+                        default:
+                            Console.WriteLine("Invalid choice. Press any key to try again...");
+                            Console.ReadKey();
+                            break;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -76,10 +123,10 @@ namespace QB_MiscIncome_CLI
                     Console.WriteLine($"Inner exception: {ex.InnerException.Message}");
                 }
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
-            }
 
-            Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
+                Console.WriteLine("\nPress any key to exit...");
+                Console.ReadKey();
+            }
         }
 
         /// <summary>
@@ -108,13 +155,10 @@ namespace QB_MiscIncome_CLI
         }
 
         /// <summary>
-        /// Now we can remove this method since we've moved it to MiscIncomeReader
-        /// 
-        /// If you're updating the program, you should delete this method
+        /// Queries MiscIncome records from QuickBooks
         /// </summary>
         private static void QueryMiscIncomes()
         {
-            // This method should be removed - functionality has been moved to MiscIncomeReader.QueryMiscIncomes()
             MiscIncomeReader.QueryMiscIncomes();
         }
 
@@ -176,14 +220,69 @@ namespace QB_MiscIncome_CLI
         }
 
         /// <summary>
-        /// Helper function to truncate strings for display formatting
+        /// Compares MiscIncome records from Excel with QuickBooks without adding them
         /// </summary>
-        private static string TruncateString(string input, int maxLength)
+        private static void CompareMiscIncomesFromExcel()
         {
-            if (string.IsNullOrEmpty(input))
-                return string.Empty;
+            Console.WriteLine($"Parsing Excel file: {excelFilePath}");
+            List<MiscIncome> excelIncomes = ExcelParser.ParseExcelFile(excelFilePath);
 
-            return input.Length <= maxLength ? input : input.Substring(0, maxLength - 3) + "...";
+            if (excelIncomes.Count == 0)
+            {
+                Console.WriteLine("No records found in Excel file or error parsing file.");
+                return;
+            }
+
+            Console.WriteLine($"Found {excelIncomes.Count} records in Excel file.");
+
+            try
+            {
+                Console.WriteLine("\nComparing Excel records with QuickBooks records...");
+                List<MiscIncome> newRecords = MiscIncomeComparator.CompareMiscIncomes(excelIncomes);
+
+                // Ask user if they want to add new records
+                if (newRecords.Count > 0)
+                {
+                    Console.WriteLine($"\nFound {newRecords.Count} new records that could be added to QuickBooks.");
+                    Console.WriteLine("Would you like to add these new records to QuickBooks? (Y/N)");
+                    string response = Console.ReadLine().Trim().ToUpper();
+
+                    if (response == "Y")
+                    {
+                        Console.WriteLine($"\nAdding {newRecords.Count} new records to QuickBooks...");
+
+                        try
+                        {
+                            using (var qbSession = new QuickBooksSession(AppConfig.QB_APP_NAME))
+                            {
+                                var adder = new MiscIncomeAdder(qbSession);
+                                adder.AddMiscIncomes(newRecords);
+                                Console.WriteLine($"Successfully added {newRecords.Count} new MiscIncome records.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex, "Error adding new MiscIncome records from comparison");
+                            Console.WriteLine($"Error adding new MiscIncome records: {ex.Message}");
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No records will be added to QuickBooks.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No new records to add to QuickBooks.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error comparing MiscIncome records");
+                Console.WriteLine($"Error comparing MiscIncome records: {ex.Message}");
+                throw;
+            }
         }
     }
 }

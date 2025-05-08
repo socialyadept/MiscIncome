@@ -30,10 +30,10 @@ namespace QB_MiscIncome_Test
                 // 1) Create any needed customers in QB
                 using (var qbSession = new QuickBooksSession(AppConfig.QB_APP_NAME))
                 {
-                    qbSession.BeginSession(); // only if your QuickBooksSession requires it
+                    //qbSession.BeginSession(); // only if your QuickBooksSession requires it
                     for (int i = 0; i < 2; i++)
                     {
-                        string custName = $"TestCust_{Guid.NewGuid().ToString("N").Substring(0,6)}";
+                        string custName = $"TestCust_{Guid.NewGuid().ToString("N").Substring(0, 6)}";
                         string custListID = AddCustomer(qbSession, custName);
                         createdCustomerListIDs.Add(custListID);
 
@@ -178,7 +178,7 @@ namespace QB_MiscIncome_Test
                 }
 
                 // If we got a deposit in the result, convert to a MiscIncome model
-                var depositRetList = resp.Detail as IDepositRetList; 
+                var depositRetList = resp.Detail as IDepositRetList;
                 if (depositRetList == null || depositRetList.Count == 0)
                     return null;
 

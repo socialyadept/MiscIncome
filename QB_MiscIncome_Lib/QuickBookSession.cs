@@ -1,6 +1,6 @@
 ﻿using QBFC16Lib;
 
-namespace QB_MiscIncome_Test
+namespace QB_MiscIncome_Lib
 {
     public class QuickBooksSession : IDisposable
     {

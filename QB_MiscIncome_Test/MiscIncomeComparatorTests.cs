@@ -6,7 +6,6 @@ using System.Linq;
 using Serilog;
 using QBFC16Lib;
 using QB_MiscIncome_Lib;          // MiscIncome, MiscIncomeLine, MiscIncomeStatus
-using QB_MiscIncome_Lib;          // MiscIncomeComparator
 using static QB_MiscIncome_Test.CommonMethods;
 
 namespace QB_MiscIncome_Test
@@ -26,7 +25,7 @@ namespace QB_MiscIncome_Test
 
             // ─── 2️⃣  Create QB fixtures (vendor + 2 items) ─────────────────────
             var createdVendorIds = new List<string>();
-            var createdItemIds   = new List<string>();
+            var createdItemIds = new List<string>();
 
             using (var qb = new QuickBooksSession(AppConfig.QB_APP_NAME))
             {
@@ -50,7 +49,7 @@ namespace QB_MiscIncome_Test
             var invalidIncome = BuildInvalidIncome(COMPANY_ID_START + 4); // INVALID ⇒ FailedToAdd
             initialIncomes.Add(invalidIncome);
 
-            List<MiscIncome> firstPass  = new();
+            List<MiscIncome> firstPass = new();
             List<MiscIncome> secondPass = new();
 
             try
@@ -83,7 +82,7 @@ namespace QB_MiscIncome_Test
                 secondPass = MiscIncomeComparator.CompareMiscIncomes(updatedIncomes);
                 var secondDict = secondPass.ToDictionary(m => m.InvoiceNum);
 
-                Assert.Equal(MiscIncomeStatus.Missing,   secondDict[incomeToRemove.InvoiceNum].Status);
+                Assert.Equal(MiscIncomeStatus.Missing, secondDict[incomeToRemove.InvoiceNum].Status);
                 Assert.Equal(MiscIncomeStatus.Different, secondDict[incomeToModify.InvoiceNum].Status);
 
                 foreach (var inv in updatedIncomes
@@ -118,7 +117,7 @@ namespace QB_MiscIncome_Test
             string logs = File.ReadAllText(logFile);
 
             Assert.Contains("MiscIncomeComparator Initialized", logs);
-            Assert.Contains("MiscIncomeComparator Completed",   logs);
+            Assert.Contains("MiscIncomeComparator Completed", logs);
 
             foreach (var mi in firstPass.Concat(secondPass))
                 Assert.Contains($"MiscIncome {mi.InvoiceNum} is {mi.Status}.", logs);
@@ -131,9 +130,9 @@ namespace QB_MiscIncome_Test
             new()
             {
                 VendorName = vendorName,
-                BillDate   = DateTime.Today,
+                BillDate = DateTime.Today,
                 InvoiceNum = $"INV_{Guid.NewGuid():N}".Substring(0, 10),
-                Memo       = (companyStart + idx).ToString(),
+                Memo = (companyStart + idx).ToString(),
                 Lines = new()
                 {
                     new MiscIncomeLine { PartName = partNames[0], Quantity = 2, UnitPrice = 15.5 },
@@ -145,32 +144,32 @@ namespace QB_MiscIncome_Test
             new()
             {
                 VendorName = $"BadVendor_{Guid.NewGuid():N}".Substring(0, 6),
-                BillDate   = DateTime.Today,
+                BillDate = DateTime.Today,
                 InvoiceNum = $"INV_BAD_{Guid.NewGuid():N}".Substring(0, 10),
-                Memo       = companyId.ToString(),
-                Lines      = new() { new MiscIncomeLine { PartName = "BadItem", Quantity = 1, UnitPrice = 1.0 } }
+                Memo = companyId.ToString(),
+                Lines = new() { new MiscIncomeLine { PartName = "BadItem", Quantity = 1, UnitPrice = 1.0 } }
             };
 
         // —— QuickBooks CRUD helpers (Vendor / Item / Bill) ————————————————
         private string AddVendor(QuickBooksSession s, string name)
         {
-            var rq  = s.CreateRequestSet();
+            var rq = s.CreateRequestSet();
             var add = rq.AppendVendorAddRq();
             add.Name.SetValue(name);
-            var rs  = s.SendRequest(rq).ResponseList.GetAt(0);
+            var rs = s.SendRequest(rq).ResponseList.GetAt(0);
             if (rs.StatusCode != 0) throw new Exception(rs.StatusMessage);
             return ((IVendorRet)rs.Detail).ListID.GetValue();
         }
 
         private string AddInventoryItem(QuickBooksSession s, string name)
         {
-            var rq  = s.CreateRequestSet();
+            var rq = s.CreateRequestSet();
             var add = rq.AppendItemInventoryAddRq();
             add.Name.SetValue(name);
             add.IncomeAccountRef.FullName.SetValue("Sales");
             add.COGSAccountRef.FullName.SetValue("Cost of Goods Sold");
             add.AssetAccountRef.FullName.SetValue("Inventory Asset");
-            var rs  = s.SendRequest(rq).ResponseList.GetAt(0);
+            var rs = s.SendRequest(rq).ResponseList.GetAt(0);
             if (rs.StatusCode != 0) throw new Exception(rs.StatusMessage);
             return ((IItemInventoryRet)rs.Detail).ListID.GetValue();
         }
@@ -192,7 +191,7 @@ namespace QB_MiscIncome_Test
 
         private void DeleteListObj(QuickBooksSession s, ENListDelType type, string listId)
         {
-            var rq  = s.CreateRequestSet();
+            var rq = s.CreateRequestSet();
             var del = rq.AppendListDelRq();
             del.ListDelType.SetValue(type);
             del.ListID.SetValue(listId);
